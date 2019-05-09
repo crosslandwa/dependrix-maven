@@ -4,13 +4,24 @@
   "description": "Process maven dependency trees into JSON for consumption by dependrix-visualisation",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint *.js **/*.js",
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/crosslandwa/dependrix-maven.git"
   },
   "author": "https://github.com/crosslandwa",
-  "license": "MIT License"
+  "license": "MIT License",
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.17.2",
+    "eslint-plugin-jasmine": "^2.10.1",
+    "eslint-plugin-node": "^9.0.1",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "jasmine": "^3.4.0"
+  }
 }
