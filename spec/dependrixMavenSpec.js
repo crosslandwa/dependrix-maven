@@ -2,17 +2,28 @@ const DependrixMaven = require('..')
 const { Readable } = require('stream')
 
 describe('dependrix-maven', () => {
-  it('reads content from the supplied array of streams', done => {
+  it('generates an artifact for each passed maven dependency tree, parsing the groupId, artifactId and version', done => {
     DependrixMaven([
-      asStream('abc'),
-      asStream('def'),
-      asStream('xyz')
+      asStream('dependrix.maven:artifactA:war:1.0.0'),
+      asStream('dependrix.maven:artifactB:war:1.0.0')
     ])
-      .then(readContent => {
-        expect(readContent[0]).toEqual('abc')
-        expect(readContent[1]).toEqual('def')
-        expect(readContent[2]).toEqual('xyz')
-      })
+      .then(expectReturnedObjectToEqual({
+        artifacts: {
+          'dependrix.maven:artifactA': {
+            groupId: 'dependrix.maven',
+            artifactId: 'artifactA',
+            version: '1.0.0',
+            dependencies: {}
+          },
+          'dependrix.maven:artifactB': {
+            groupId: 'dependrix.maven',
+            artifactId: 'artifactB',
+            version: '1.0.0',
+            dependencies: {}
+          }
+        },
+        dependencies: {}
+      }))
       .then(done, done.fail)
   })
 })
@@ -22,4 +33,8 @@ function asStream (content) {
   s.push(content)
   s.push(null)
   return s
+}
+
+function expectReturnedObjectToEqual (expected) {
+  return actual => expect(JSON.stringify(actual, null, 2)).toEqual(JSON.stringify(expected, null, 2))
 }
