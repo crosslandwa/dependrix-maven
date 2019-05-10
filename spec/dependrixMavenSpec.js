@@ -27,6 +27,24 @@ describe('dependrix-maven', () => {
       .then(done, done.fail)
   })
 
+  it('is tolerant of empty lines when parsing a dependency tree', done => {
+    /* eslint-disable */
+    const tree = `
+
+
+dependrix.maven:artifactA:war:1.0.0
++- dependrix.maven:a-dependency:jar:2.0.0:compile
+|  \- dependrix.maven:a-transient-dependency:jar:3.0.0:compile
+
+
+`
+    /* eslint-enable */
+
+    DependrixMaven([asStream(tree)])
+      .then(returned => expect(Object.keys(returned.artifacts).length).toEqual(1))
+      .then(done, done.fail)
+  })
+
   it('parses every dependency of the artifact', done => {
     /* eslint-disable */
     const tree = `
@@ -77,6 +95,66 @@ dependrix.maven:artifactA:war:1.0.0
       .then(returned => returned.dependencies)
       .then(expectReturnedObjectToEqual({
         'dependrix.maven:a-dependency': [ '2.0.0', '2.1.0' ]
+      }))
+      .then(done, done.fail)
+  })
+
+  it('includes the identifier if it exists in the dependencies', done => {
+    /* eslint-disable */
+    const tree = `
+dependrix.maven:top-level-artifact:war:1.0.0
++- dependrix.maven:dependency-a:jar:with-identifier:2.0.0:compile
++- dependrix.maven:dependency-b:jar:3.0.0:compile
+`
+    /* eslint-enable */
+    DependrixMaven([asStream(tree)])
+      .then(expectReturnedObjectToEqual({
+        artifacts: {
+          'dependrix.maven:top-level-artifact': {
+            groupId: 'dependrix.maven',
+            artifactId: 'top-level-artifact',
+            version: '1.0.0',
+            dependencies: {
+              'dependrix.maven:dependency-a:with-identifier': {
+                version: '2.0.0',
+                scope: 'compile'
+              },
+              'dependrix.maven:dependency-b': {
+                version: '3.0.0',
+                scope: 'compile'
+              }
+            }
+          }
+        },
+        dependencies: {
+          'dependrix.maven:dependency-a:with-identifier': [ '2.0.0' ],
+          'dependrix.maven:dependency-b': [ '3.0.0' ]
+        }
+      }))
+      .then(done, done.fail)
+  })
+
+  it('generates an artifact for each passed maven dependency tree, parsing the groupId, artifactId and version', done => {
+    DependrixMaven([
+      asStream('dependrix.maven:artifactA:war:1.0.0'),
+      asStream('dependrix.maven:artifactB:war:1.0.0')
+    ])
+      .then(expectReturnedObjectToEqual({
+        artifacts: {
+          'dependrix.maven:artifactA': {
+            groupId: 'dependrix.maven',
+            artifactId: 'artifactA',
+            version: '1.0.0',
+            dependencies: {}
+          },
+          'dependrix.maven:artifactB': {
+            groupId: 'dependrix.maven',
+            artifactId: 'artifactB',
+            version: '1.0.0',
+            dependencies: {}
+          }
+        },
+        dependencies: {}
       }))
       .then(done, done.fail)
   })

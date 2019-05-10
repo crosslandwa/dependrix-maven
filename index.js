@@ -1,7 +1,9 @@
 const { Writable } = require('stream')
 const apply = (x, f) => f(x)
 
-const key = ({ groupId, artifactId }) => `${groupId}:${artifactId}`
+const key = ({ groupId, artifactId, identifier }) => identifier
+  ? `${groupId}:${artifactId}:${identifier}`
+  : `${groupId}:${artifactId}`
 
 function DependrixMaven (streams) {
   return Promise.all(streams.map(readStream))
