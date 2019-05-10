@@ -26,6 +26,33 @@ describe('dependrix-maven', () => {
       }))
       .then(done, done.fail)
   })
+
+  it('parses every dependency of the artifact', done => {
+    DependrixMaven([
+      asStream('dependrix.maven:artifactA:war:1.0.0\n+- dependrix.maven:a-dependency:jar:2.0.0:compile\n|  \- dependrix.maven:a-transient-dependency:jar:3.0.0:compile')
+    ])
+      .then(expectReturnedObjectToEqual({
+        artifacts: {
+          'dependrix.maven:artifactA': {
+            groupId: 'dependrix.maven',
+            artifactId: 'artifactA',
+            version: '1.0.0',
+            dependencies: {
+              'dependrix.maven:a-dependency': {
+                version: '2.0.0',
+                scope: 'compile'
+              },
+              'dependrix.maven:a-transient-dependency': {
+                version: '3.0.0',
+                scope: 'compile'
+              }
+            }
+          }
+        },
+        dependencies: {}
+      }))
+      .then(done, done.fail)
+  })
 })
 
 function asStream (content) {

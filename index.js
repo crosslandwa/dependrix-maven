@@ -1,17 +1,21 @@
 const { Writable } = require('stream')
 const apply = (f, x) => f(x)
 
+const key = ({ groupId, artifactId }) => `${groupId}:${artifactId}`
+
 function DependrixMaven (streams) {
   return Promise.all(streams.map(readStream))
     .then(rawTrees => rawTrees.map(parseDependencyTree))
     .then(dependencyTrees => dependencyTrees.reduce(
       (acc, dependencyTree) => ({
         artifacts: Object.assign(acc.artifacts, {
-          [`${dependencyTree.artifact.groupId}:${dependencyTree.artifact.artifactId}`]: {
+          [key(dependencyTree.artifact)]: {
             groupId: dependencyTree.artifact.groupId,
             artifactId: dependencyTree.artifact.artifactId,
             version: dependencyTree.artifact.version,
-            dependencies: {}
+            dependencies: dependencyTree.dependencies.reduce((d, dependency) => Object.assign(d, ({
+              [key(dependency)]: { version: dependency.version, scope: dependency.scope }
+            })), {})
           }
         }),
         dependencies: {}
