@@ -12,8 +12,6 @@ describe('dependrix-maven', () => {
       .then(expectReturnedObjectToEqual({
         artifacts: {
           'com.chippanfire:max.msp.bucket': {
-            groupId: 'com.chippanfire',
-            artifactId: 'max.msp.bucket',
             version: '0.1.0',
             dependencies: {
               'org.testng:testng': {

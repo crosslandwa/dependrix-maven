@@ -9,14 +9,10 @@ describe('dependrix-maven', () => {
       .then(expectReturnedObjectToEqual({
         artifacts: {
           'dependrix.maven:artifactA': {
-            groupId: 'dependrix.maven',
-            artifactId: 'artifactA',
             version: '1.0.0',
             dependencies: {}
           },
           'dependrix.maven:artifactB': {
-            groupId: 'dependrix.maven',
-            artifactId: 'artifactB',
             version: '1.0.0',
             dependencies: {}
           }
@@ -56,8 +52,6 @@ dependrix.maven:artifactA:war:1.0.0
       .then(expectReturnedObjectToEqual({
         artifacts: {
           'dependrix.maven:artifactA': {
-            groupId: 'dependrix.maven',
-            artifactId: 'artifactA',
             version: '1.0.0',
             dependencies: {
               'dependrix.maven:a-dependency': {
@@ -98,7 +92,7 @@ dependrix.maven:artifactA:war:1.0.0
       .then(done, done.fail)
   })
 
-  it('includes the identifier if it exists in the dependencies', done => {
+  it('includes the identifier if it exists in the ID of each dependency', done => {
     /* eslint-disable */
     const tree = `
 dependrix.maven:top-level-artifact:war:1.0.0
@@ -110,8 +104,6 @@ dependrix.maven:top-level-artifact:war:1.0.0
       .then(expectReturnedObjectToEqual({
         artifacts: {
           'dependrix.maven:top-level-artifact': {
-            groupId: 'dependrix.maven',
-            artifactId: 'top-level-artifact',
             version: '1.0.0',
             dependencies: {
               'dependrix.maven:dependency-a:with-identifier': {
@@ -129,31 +121,6 @@ dependrix.maven:top-level-artifact:war:1.0.0
           'dependrix.maven:dependency-a:with-identifier': [ '2.0.0' ],
           'dependrix.maven:dependency-b': [ '3.0.0' ]
         }
-      }))
-      .then(done, done.fail)
-  })
-
-  it('generates an artifact for each passed maven dependency tree, parsing the groupId, artifactId and version', done => {
-    DependrixMaven([
-      asFunctionThatReturnsPromise('dependrix.maven:artifactA:war:1.0.0'),
-      asFunctionThatReturnsPromise('dependrix.maven:artifactB:war:1.0.0')
-    ])
-      .then(expectReturnedObjectToEqual({
-        artifacts: {
-          'dependrix.maven:artifactA': {
-            groupId: 'dependrix.maven',
-            artifactId: 'artifactA',
-            version: '1.0.0',
-            dependencies: {}
-          },
-          'dependrix.maven:artifactB': {
-            groupId: 'dependrix.maven',
-            artifactId: 'artifactB',
-            version: '1.0.0',
-            dependencies: {}
-          }
-        },
-        dependencies: {}
       }))
       .then(done, done.fail)
   })
