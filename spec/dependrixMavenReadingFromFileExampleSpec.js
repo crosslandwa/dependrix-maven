@@ -3,7 +3,12 @@ const fs = require('fs')
 
 describe('dependrix-maven', () => {
   it('analyses a maven dependency tree read in from a file by the client', done => {
-    DependrixMaven([fs.createReadStream(`${__dirname}/example-tree.txt`, { encoding: 'utf8' })])
+    DependrixMaven([
+      () => new Promise((resolve, reject) => fs.readFile(
+        `${__dirname}/example-tree.txt`,
+        (err, data) => err ? reject(err) : resolve(data.toString('utf-8'))
+      ))
+    ])
       .then(expectReturnedObjectToEqual({
         artifacts: {
           'com.chippanfire:max.msp.bucket': {

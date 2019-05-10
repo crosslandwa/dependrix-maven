@@ -1,11 +1,10 @@
 const DependrixMaven = require('..')
-const { Readable } = require('stream')
 
 describe('dependrix-maven', () => {
   it('generates an artifact for each passed maven dependency tree, parsing the groupId, artifactId and version', done => {
     DependrixMaven([
-      asStream('dependrix.maven:artifactA:war:1.0.0'),
-      asStream('dependrix.maven:artifactB:war:1.0.0')
+      asFunctionThatReturnsPromise('dependrix.maven:artifactA:war:1.0.0'),
+      asFunctionThatReturnsPromise('dependrix.maven:artifactB:war:1.0.0')
     ])
       .then(expectReturnedObjectToEqual({
         artifacts: {
@@ -40,7 +39,7 @@ dependrix.maven:artifactA:war:1.0.0
 `
     /* eslint-enable */
 
-    DependrixMaven([asStream(tree)])
+    DependrixMaven([asFunctionThatReturnsPromise(tree)])
       .then(returned => expect(Object.keys(returned.artifacts).length).toEqual(1))
       .then(done, done.fail)
   })
@@ -53,7 +52,7 @@ dependrix.maven:artifactA:war:1.0.0
 |  \- dependrix.maven:a-transient-dependency:jar:3.0.0:compile
 `
     /* eslint-enable */
-    DependrixMaven([asStream(tree)])
+    DependrixMaven([asFunctionThatReturnsPromise(tree)])
       .then(expectReturnedObjectToEqual({
         artifacts: {
           'dependrix.maven:artifactA': {
@@ -91,7 +90,7 @@ dependrix.maven:artifactA:war:1.0.0
 +- dependrix.maven:a-dependency:jar:2.1.0:compile
 `
     /* eslint-enable */
-    DependrixMaven([tree1, tree2].map(asStream))
+    DependrixMaven([tree1, tree2].map(asFunctionThatReturnsPromise))
       .then(returned => returned.dependencies)
       .then(expectReturnedObjectToEqual({
         'dependrix.maven:a-dependency': [ '2.0.0', '2.1.0' ]
@@ -107,7 +106,7 @@ dependrix.maven:top-level-artifact:war:1.0.0
 +- dependrix.maven:dependency-b:jar:3.0.0:compile
 `
     /* eslint-enable */
-    DependrixMaven([asStream(tree)])
+    DependrixMaven([asFunctionThatReturnsPromise(tree)])
       .then(expectReturnedObjectToEqual({
         artifacts: {
           'dependrix.maven:top-level-artifact': {
@@ -136,8 +135,8 @@ dependrix.maven:top-level-artifact:war:1.0.0
 
   it('generates an artifact for each passed maven dependency tree, parsing the groupId, artifactId and version', done => {
     DependrixMaven([
-      asStream('dependrix.maven:artifactA:war:1.0.0'),
-      asStream('dependrix.maven:artifactB:war:1.0.0')
+      asFunctionThatReturnsPromise('dependrix.maven:artifactA:war:1.0.0'),
+      asFunctionThatReturnsPromise('dependrix.maven:artifactB:war:1.0.0')
     ])
       .then(expectReturnedObjectToEqual({
         artifacts: {
@@ -160,11 +159,8 @@ dependrix.maven:top-level-artifact:war:1.0.0
   })
 })
 
-function asStream (content) {
-  const s = new Readable()
-  s.push(content)
-  s.push(null)
-  return s
+function asFunctionThatReturnsPromise (content) {
+  return () => Promise.resolve(content)
 }
 
 function expectReturnedObjectToEqual (expected) {

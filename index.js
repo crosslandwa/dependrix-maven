@@ -1,30 +1,19 @@
-const { Writable } = require('stream')
 const apply = (x, f) => f(x)
 
 const key = ({ groupId, artifactId, identifier }) => identifier
   ? `${groupId}:${artifactId}:${identifier}`
   : `${groupId}:${artifactId}`
 
-function DependrixMaven (streams) {
-  return Promise.all(streams.map(readStream))
+/**
+ * Takes an array of functions that return a promise that resolves to the string content of the output of a mvn dependency:tree command
+ */
+function DependrixMaven (providers) {
+  return Promise.all(providers.map(provider => provider()))
     .then(rawTrees => rawTrees.map(parseDependencyTree))
     .then(dependencyTrees => dependencyTrees.reduce((acc, { artifact, dependencies }) => ({
       artifacts: Object.assign({}, acc.artifacts, artifactModel(artifact, dependencies)),
       dependencies: dependencies.reduce(toDependencyList, acc.dependencies)
     }), { artifacts: {}, dependencies: {} }))
-}
-
-function readStream (stream) {
-  return new Promise((resolve, reject) => {
-    let content
-    const outStream = new Writable({
-      write (chunk) {
-        content = chunk.toString('utf8')
-      }
-    })
-    stream.on('end', () => resolve(content))
-    stream.pipe(outStream)
-  })
 }
 
 function parseDependencyTree (raw) {
