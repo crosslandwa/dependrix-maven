@@ -1,0 +1,6 @@
+com.chippanfire:max.msp.bucket:jar:0.1.0
+\- org.testng:testng:jar:6.1.1:test
+   +- junit:junit:jar:3.8.1:test
+   +- org.beanshell:bsh:jar:2.0b4:test
+   +- com.beust:jcommander:jar:1.12:test
+   \- org.yaml:snakeyaml:jar:1.6:test
