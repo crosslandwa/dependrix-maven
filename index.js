@@ -1,27 +1,15 @@
 const { Writable } = require('stream')
-const apply = (f, x) => f(x)
+const apply = (x, f) => f(x)
 
 const key = ({ groupId, artifactId }) => `${groupId}:${artifactId}`
 
 function DependrixMaven (streams) {
   return Promise.all(streams.map(readStream))
     .then(rawTrees => rawTrees.map(parseDependencyTree))
-    .then(dependencyTrees => dependencyTrees.reduce(
-      (acc, dependencyTree) => ({
-        artifacts: Object.assign(acc.artifacts, {
-          [key(dependencyTree.artifact)]: {
-            groupId: dependencyTree.artifact.groupId,
-            artifactId: dependencyTree.artifact.artifactId,
-            version: dependencyTree.artifact.version,
-            dependencies: dependencyTree.dependencies.reduce((d, dependency) => Object.assign(d, ({
-              [key(dependency)]: { version: dependency.version, scope: dependency.scope }
-            })), {})
-          }
-        }),
-        dependencies: {}
-      }),
-      { artifacts: {}, dependencies: {} }
-    ))
+    .then(dependencyTrees => dependencyTrees.reduce((acc, { artifact, dependencies }) => ({
+      artifacts: Object.assign({}, acc.artifacts, artifactModel(artifact, dependencies)),
+      dependencies: dependencies.reduce(toDependencyList, acc.dependencies)
+    }), { artifacts: {}, dependencies: {} }))
 }
 
 function readStream (stream) {
@@ -39,7 +27,7 @@ function readStream (stream) {
 
 function parseDependencyTree (raw) {
   const [artifact, ...dependencies] = raw.split('\n')
-    .map(line => apply(result => result ? result[1] : undefined, line.match(/([\w.:-]+$)+/)))
+    .map(line => apply(line.match(/([\w.:-]+$)+/), result => result ? result[1] : undefined))
     .filter(parsed => parsed)
     .map(parsed => parsed.split(':'))
     .map(parsed => {
@@ -52,5 +40,29 @@ function parseDependencyTree (raw) {
     })
   return { artifact, dependencies }
 }
+
+function artifactModel (artifact, dependencies) {
+  return {
+    [key(artifact)]: {
+      groupId: artifact.groupId,
+      artifactId: artifact.artifactId,
+      version: artifact.version,
+      dependencies: dependencies.reduce((d, dependency) => Object.assign(d, ({
+        [key(dependency)]: { version: dependency.version, scope: dependency.scope }
+      })), {})
+    }
+  }
+}
+
+function toDependencyList (existingDependencyLists, dependency) {
+  return apply(
+    key(dependency),
+    key => Object.assign({}, existingDependencyLists, ({
+      [key]: dependencyList(existingDependencyLists[key], dependency.version)
+    }))
+  )
+}
+
+const dependencyList = (existing = [], versionToAdd) => [...(new Set(existing.concat(versionToAdd)))]
 
 module.exports = DependrixMaven

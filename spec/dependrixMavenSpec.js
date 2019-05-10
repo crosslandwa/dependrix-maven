@@ -28,9 +28,14 @@ describe('dependrix-maven', () => {
   })
 
   it('parses every dependency of the artifact', done => {
-    DependrixMaven([
-      asStream('dependrix.maven:artifactA:war:1.0.0\n+- dependrix.maven:a-dependency:jar:2.0.0:compile\n|  \- dependrix.maven:a-transient-dependency:jar:3.0.0:compile')
-    ])
+    /* eslint-disable */
+    const tree = `
+dependrix.maven:artifactA:war:1.0.0
++- dependrix.maven:a-dependency:jar:2.0.0:compile
+|  \- dependrix.maven:a-transient-dependency:jar:3.0.0:compile
+`
+    /* eslint-enable */
+    DependrixMaven([asStream(tree)])
       .then(expectReturnedObjectToEqual({
         artifacts: {
           'dependrix.maven:artifactA': {
@@ -49,7 +54,29 @@ describe('dependrix-maven', () => {
             }
           }
         },
-        dependencies: {}
+        dependencies: {
+          'dependrix.maven:a-dependency': [ '2.0.0' ],
+          'dependrix.maven:a-transient-dependency': [ '3.0.0' ]
+        }
+      }))
+      .then(done, done.fail)
+  })
+
+  it('records where two artifacts are dependent on different versions of the same dependency', done => {
+    /* eslint-disable */
+    const tree1 = `
+dependrix.maven:artifactA:war:1.0.0
++- dependrix.maven:a-dependency:jar:2.0.0:compile
+`
+    const tree2 = `
+dependrix.maven:artifactA:war:1.0.0
++- dependrix.maven:a-dependency:jar:2.1.0:compile
+`
+    /* eslint-enable */
+    DependrixMaven([tree1, tree2].map(asStream))
+      .then(returned => returned.dependencies)
+      .then(expectReturnedObjectToEqual({
+        'dependrix.maven:a-dependency': [ '2.0.0', '2.1.0' ]
       }))
       .then(done, done.fail)
   })
