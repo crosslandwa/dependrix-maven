@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint *.js **/*.js",
+    "prepublish": "npm run lint && npm test",
     "start": "node index.js",
     "test": "jasmine"
   },
