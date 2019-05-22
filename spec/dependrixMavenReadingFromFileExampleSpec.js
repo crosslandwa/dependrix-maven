@@ -10,39 +10,37 @@ describe('dependrix-maven', () => {
       ))
     ])
       .then(expectReturnedObjectToEqual({
-        artifacts: {
+        projects: {
           'com.chippanfire:max.msp.bucket': {
             version: '0.1.0',
-            dependencies: {
-              'org.testng:testng': {
+            dependencies: [
+              {
+                id: 'org.testng:testng',
                 version: '6.1.1',
                 scope: 'test'
               },
-              'junit:junit': {
+              {
+                id: 'junit:junit',
                 version: '3.8.1',
                 scope: 'test'
               },
-              'org.beanshell:bsh': {
+              {
+                id: 'org.beanshell:bsh',
                 version: '2.0b4',
                 scope: 'test'
               },
-              'com.beust:jcommander': {
+              {
+                id: 'com.beust:jcommander',
                 version: '1.12',
                 scope: 'test'
               },
-              'org.yaml:snakeyaml': {
+              {
+                id: 'org.yaml:snakeyaml',
                 version: '1.6',
                 scope: 'test'
               }
-            }
+            ]
           }
-        },
-        dependencies: {
-          'org.testng:testng': [ '6.1.1' ],
-          'junit:junit': [ '3.8.1' ],
-          'org.beanshell:bsh': [ '2.0b4' ],
-          'com.beust:jcommander': [ '1.12' ],
-          'org.yaml:snakeyaml': [ '1.6' ]
         }
       }))
       .then(done, done.fail)

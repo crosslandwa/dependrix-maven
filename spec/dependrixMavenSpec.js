@@ -7,17 +7,16 @@ describe('dependrix-maven', () => {
       asFunctionThatReturnsPromise('dependrix.maven:artifactB:war:1.0.0')
     ])
       .then(expectReturnedObjectToEqual({
-        artifacts: {
+        projects: {
           'dependrix.maven:artifactA': {
             version: '1.0.0',
-            dependencies: {}
+            dependencies: []
           },
           'dependrix.maven:artifactB': {
             version: '1.0.0',
-            dependencies: {}
+            dependencies: []
           }
-        },
-        dependencies: {}
+        }
       }))
       .then(done, done.fail)
   })
@@ -36,7 +35,7 @@ dependrix.maven:artifactA:war:1.0.0
     /* eslint-enable */
 
     DependrixMaven([asFunctionThatReturnsPromise(tree)])
-      .then(returned => expect(Object.keys(returned.artifacts).length).toEqual(1))
+      .then(returned => expect(Object.keys(returned.projects).length).toEqual(1))
       .then(done, done.fail)
   })
 
@@ -50,24 +49,22 @@ dependrix.maven:artifactA:war:1.0.0
     /* eslint-enable */
     DependrixMaven([asFunctionThatReturnsPromise(tree)])
       .then(expectReturnedObjectToEqual({
-        artifacts: {
+        projects: {
           'dependrix.maven:artifactA': {
             version: '1.0.0',
-            dependencies: {
-              'dependrix.maven:a-dependency': {
+            dependencies: [
+              {
+                id: 'dependrix.maven:a-dependency',
                 version: '2.0.0',
                 scope: 'compile'
               },
-              'dependrix.maven:a-transient-dependency': {
+              {
+                id: 'dependrix.maven:a-transient-dependency',
                 version: '3.0.0',
                 scope: 'compile'
               }
-            }
+            ]
           }
-        },
-        dependencies: {
-          'dependrix.maven:a-dependency': [ '2.0.0' ],
-          'dependrix.maven:a-transient-dependency': [ '3.0.0' ]
         }
       }))
       .then(done, done.fail)
@@ -80,14 +77,34 @@ dependrix.maven:artifactA:war:1.0.0
 +- dependrix.maven:a-dependency:jar:2.0.0:compile
 `
     const tree2 = `
-dependrix.maven:artifactA:war:1.0.0
+dependrix.maven:artifactB:war:1.0.0
 +- dependrix.maven:a-dependency:jar:2.1.0:compile
 `
     /* eslint-enable */
     DependrixMaven([tree1, tree2].map(asFunctionThatReturnsPromise))
-      .then(returned => returned.dependencies)
       .then(expectReturnedObjectToEqual({
-        'dependrix.maven:a-dependency': [ '2.0.0', '2.1.0' ]
+        projects: {
+          'dependrix.maven:artifactA': {
+            version: '1.0.0',
+            dependencies: [
+              {
+                id: 'dependrix.maven:a-dependency',
+                version: '2.0.0',
+                scope: 'compile'
+              }
+            ]
+          },
+          'dependrix.maven:artifactB': {
+            version: '1.0.0',
+            dependencies: [
+              {
+                id: 'dependrix.maven:a-dependency',
+                version: '2.1.0',
+                scope: 'compile'
+              }
+            ]
+          }
+        }
       }))
       .then(done, done.fail)
   })
@@ -102,24 +119,22 @@ dependrix.maven:top-level-artifact:war:1.0.0
     /* eslint-enable */
     DependrixMaven([asFunctionThatReturnsPromise(tree)])
       .then(expectReturnedObjectToEqual({
-        artifacts: {
+        projects: {
           'dependrix.maven:top-level-artifact': {
             version: '1.0.0',
-            dependencies: {
-              'dependrix.maven:dependency-a:with-identifier': {
+            dependencies: [
+              {
+                id: 'dependrix.maven:dependency-a:with-identifier',
                 version: '2.0.0',
                 scope: 'compile'
               },
-              'dependrix.maven:dependency-b': {
+              {
+                id: 'dependrix.maven:dependency-b',
                 version: '3.0.0',
                 scope: 'compile'
               }
-            }
+            ]
           }
-        },
-        dependencies: {
-          'dependrix.maven:dependency-a:with-identifier': [ '2.0.0' ],
-          'dependrix.maven:dependency-b': [ '3.0.0' ]
         }
       }))
       .then(done, done.fail)
