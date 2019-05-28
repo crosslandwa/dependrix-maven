@@ -12,9 +12,8 @@ function DependrixMaven (providers) {
   return Promise.all(providers.map(provider => provider()))
     .then(rawTrees => rawTrees.map(parseDependencyTree))
     .then(parsed => parsed.reduce((acc, { artifact, dependencies }) => ({
-      artifacts: Object.assign({}, acc.artifacts, artifactModel(artifact, dependencies)),
-      dependencies: dependencies.reduce(toDependencyList, acc.dependencies)
-    }), { artifacts: {}, dependencies: {} }))
+      projects: Object.assign({}, acc.projects, projectModel(artifact, dependencies))
+    }), { projects: {} }))
 }
 
 function parseDependencyTree (raw) {
@@ -33,21 +32,17 @@ function parseDependencyTree (raw) {
   return { artifact, dependencies }
 }
 
-function artifactModel (artifact, dependencies) {
+function projectModel (artifact, dependencies) {
   return {
     [artifact.key]: {
       version: artifact.version,
-      dependencies: dependencies.reduce((d, dependency) => Object.assign(d, ({
-        [dependency.key]: { version: dependency.version, scope: dependency.scope }
-      })), {})
+      dependencies: dependencies.map(dependency => ({
+        id: dependency.key,
+        version: dependency.version,
+        scope: dependency.scope
+      }))
     }
   }
-}
-
-function toDependencyList (existingDependencyLists, dependency) {
-  return Object.assign({}, existingDependencyLists, ({
-    [dependency.key]: [...(new Set((existingDependencyLists[dependency.key] || []).concat(dependency.version)))]
-  }))
 }
 
 module.exports = DependrixMaven
